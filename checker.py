@@ -1,6 +1,8 @@
+import os
 import sys
 from time import sleep
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 def check_error_in_log(driver):
@@ -27,6 +29,9 @@ SLEEP_TIME_SEC = 3
 
 def main():
     assert(len(sys.argv) > 1)
+    hub_url = os.environ['HUB_URL']
+
+    assert(hub_url is not None and len(hub_url) != 0)
 
     success = True
     urls = sys.argv[1:]
@@ -35,7 +40,10 @@ def main():
         try:
             print('Loading "{0}"'.format(url))
 
-            driver = webdriver.Chrome()
+            driver = webdriver.Remote(
+                command_executor=hub_url,
+                desired_capabilities=DesiredCapabilities.CHROME)
+
             driver.get(url)
 
             # wait until JavaScript do self dirty work at load page
@@ -44,7 +52,8 @@ def main():
 
             success = check_error_in_log(driver) and success
         finally:
-            driver.close()
+            if driver:
+                driver.close()
 
     exit(0 if success else 1)
 
