@@ -12,7 +12,9 @@ def check_error_in_log(driver):
     for entry in driver.get_log('browser'):
         # accept errors only (without message about favicon.ico)
         if entry['level'] == 'SEVERE' and entry['message'].find('favicon.ico') == -1:
-            errors.append('      Source: {0[source]}, Message: {0[message]}'.format(entry))
+            source = entry.get('source', '')
+            message = entry.get('message', '')
+            errors.append('      Source: {0}, Message: {1}'.format(source, message))
 
     if len(errors) != 0:
         print('    Has error(s):')
