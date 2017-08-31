@@ -8,18 +8,22 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 def check_error_in_log(driver):
     print('  Checking log...')
 
+    logs = []
     errors = []
     for entry in driver.get_log('browser'):
+        source = entry.get('source', '')
+        message = entry.get('message', '')
+        logs.append('       {0}: {1}'.format(source, message))
+
         # accept errors only (without message about favicon.ico)
         if entry['level'] == 'SEVERE' and entry['message'].find('favicon.ico') == -1:
-            source = entry.get('source', '')
-            message = entry.get('message', '')
             errors.append('      Source: {0}, Message: {1}'.format(source, message))
 
     if len(errors) != 0:
         print('    Has error(s):')
-        for error in errors:
-            print(error)
+        print('\n'.join(errors))
+        print('    Full logs:')
+        print('\n'.join(logs))
 
         return False
 
@@ -38,6 +42,7 @@ def main():
     success = True
     urls = sys.argv[1:]
 
+    driver = None
     for url in urls:
         try:
             print('Loading "{0}"'.format(url))
