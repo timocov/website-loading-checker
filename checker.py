@@ -1,8 +1,29 @@
 import os
 import sys
+from pytz import utc
+from datetime import datetime
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
+
+def is_error_entry(entry):
+    level = entry.get('level', '')
+    message = entry.get('message', '')
+
+    # message about missing favicon.ico is not an error :-)
+    return level == 'SEVERE' and message.find('favicon.ico') == -1
+
+
+def timestamp_to_str(timestamp):
+    return datetime.fromtimestamp(timestamp, tz=utc).isoformat('T')
+
+
+def entry_to_str(entry):
+    return '{0} - {1}'.format(
+        timestamp_to_str(entry.get('timestamp', 0L) / 1000),
+        entry.get('message', '')
+    )
 
 
 def check_error_in_log(driver):
@@ -12,14 +33,13 @@ def check_error_in_log(driver):
     has_errors = False
 
     for entry in driver.get_log('browser'):
-        entry_message = entry.get('message', '')
+        log_message = entry_to_str(entry)
 
-        # message about missing favicon.ico is not an error :-)
-        if entry['level'] == 'SEVERE' and entry_message.find('favicon.ico') == -1:
+        if is_error_entry(entry):
+            log_message = 'ERROR: {0}'.format(log_message)
             has_errors = True
-            entry_message = 'ERROR: {0}'.format(entry_message)
 
-        logs.append('      {0}'.format(entry_message))
+        logs.append('      {0}'.format(log_message))
 
     if has_errors:
         print('    Browser logs has error(s):')
