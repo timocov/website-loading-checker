@@ -1,2 +1,7 @@
 [MESSAGES CONTROL]
-disable=C0325,C0111,C1801
+disable=
+    missing-docstring,
+    superfluous-parens
+
+[FORMAT]
+max-line-length=100
