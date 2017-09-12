@@ -33,6 +33,14 @@ def check_error_in_log(driver):
 SLEEP_TIME_SEC = 3
 
 
+def enable_all_browser_logs(capabilities):
+    logging_preferences_key = 'loggingPrefs'
+
+    logging_preferences = capabilities.get(logging_preferences_key, {})
+    logging_preferences['browser'] = 'ALL'
+    capabilities[logging_preferences_key] = logging_preferences
+
+
 def main():
     assert(len(sys.argv) > 1)
     hub_url = os.environ['HUB_URL']
@@ -47,9 +55,12 @@ def main():
         try:
             print('Loading "{0}"'.format(url))
 
+            capabilities = DesiredCapabilities.CHROME.copy()
+            enable_all_browser_logs(capabilities)
+
             driver = webdriver.Remote(
                 command_executor=hub_url,
-                desired_capabilities=DesiredCapabilities.CHROME)
+                desired_capabilities=capabilities)
 
             driver.get(url)
 
