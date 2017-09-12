@@ -6,25 +6,24 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 def check_error_in_log(driver):
-    print('  Checking log...')
+    print('  Checking browser log...')
 
     logs = []
-    errors = []
+    has_errors = False
+
     for entry in driver.get_log('browser'):
-        source = entry.get('source', '')
-        message = entry.get('message', '')
-        logs.append('       {0}: {1}'.format(source, message))
+        entry_message = entry.get('message', '')
 
-        # accept errors only (without message about favicon.ico)
-        if entry['level'] == 'SEVERE' and entry['message'].find('favicon.ico') == -1:
-            errors.append('      Source: {0}, Message: {1}'.format(source, message))
+        # message about missing favicon.ico is not an error :-)
+        if entry['level'] == 'SEVERE' and entry_message.find('favicon.ico') == -1:
+            has_errors = True
+            entry_message = 'ERROR: {0}'.format(entry_message)
 
-    if len(errors) != 0:
-        print('    Has error(s):')
-        print('\n'.join(errors))
-        print('    Full logs:')
+        logs.append('      {0}'.format(entry_message))
+
+    if has_errors:
+        print('    Browser logs has error(s):')
         print('\n'.join(logs))
-
         return False
 
     return True
